@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCA Test Automation</title>
+    <script>
+        function toggleFields() {
+            var applianceType = document.getElementById("appliance_type").value;
+            var vcsaField = document.getElementById("vcsa_version");
+            var modeltypeField = document.getElementById("model_type");
+            var agoraField = document.getElementById("agora_enable");
+            var pnicsField = document.getElementById("pnics");
+            var vcentertypeField = document.getElementById("vcenter_type");
+            var jobtypeField = document.getElementById("job_type");
+
+            if (applianceType === "vCenter") {
+                vcsaField.style.display = "block";
+                vcentertypeField.style.display = "block";
+                modeltypeField.style.display = "none";
+                jobtypeField.style.display = "none";
+                agoraField.style.display = "none";
+                pnicsField.style.display = "none";
+            } else {
+                vcsaField.style.display = "none";
+                modeltypeField.style.display = "block";
+                agoraField.style.display = "block";
+                pnicsField.style.display = "block";
+                jobtypeField.style.display = "block";
+                vcentertypeField.style.display = "none";
+            }
+        }
+    </script>
+</head>
+<body>
+
+<h1>CCA Test Automation</h1>
+<form action="/" method="POST">
+    <label for="appliance_type">Appliance Type:</label>
+    <select id="appliance_type" name="appliance_type" onchange="toggleFields()" required>
+        <option value="Cluster">Cluster</option>
+        <option value="vCenter">vCenter</option>
+    </select><br><br>
+
+    <div id="vcsa_version" style="display:none;">
+        <label for="vcsa_version">VCSA Version:</label>
+        <select name="vcsa_version">
+            <option value="7.0.3">7.0.3</option>
+            <option value="8.0.3">8.0.3</option>
+        </select><br><br>
+    </div>
+
+    <div id="vcenter_type" style="display:none;">
+        <label for="vcenter_type">vCenter Flavor:</label>
+        <select name="vcenter_type">
+            <option value="management">management</option>
+            <option value="tenant">tenant</option>
+        </select><br><br>
+    </div>
+
+    <label for="job_env">Job Env:</label><br>
+    <input type="text" id="job_env" name="job_env"><br><br>
+
+    <label for="model_type">Model Type:</label><br>
+    <select id="model_type" name="model_type">
+        <option value="HC3">HC3</option>
+        <option value="HC4">HC4</option>
+        <option value="HC5">HC5</option>
+        <option value="HC6">HC6</option>
+        <option value="HC7">HC7</option>
+    </select><br><br>
+
+    <label for="job_type">Job Type:</label><br>
+    <select id="job_type" name="job_type">
+        <option value="Standard">Standard</option>
+        <option value="Static">Static</option>
+        <option value="HVD">HVD</option>
+        <option value="SQL">SQL</option>
+        <option value="all">All</option>
+    </select><br><br>
+
+    <label for="pnics">PNICS:</label><br>
+    <select id="pnics" name="pnics">
+        <option value="2pnic">2pnic</option>
+        <option value="4pnic">4pnic</option>
+    </select><br><br>
+
+    <label for="agora_enable">Agora Backed Cluster:</label><br>
+    <select id="agora_enable" name="agora_enable">
+        <option value="true">true</option>
+        <option value="false">false</option>
+    </select><br><br>
+
+    <label for="BACCON">BACCON Extra Vars:</label><br>
+    <input type="radio" id="BACCON" name="BACCON" value="True">
+    <label for="BACCON">BACCON</label><br><br>
+
+    <label for="destroy">Destroy (yes/no/only):</label><br>
+    <input type="radio" id="destroy_yes" name="destroy" value="yes"><label for="destroy_yes">Yes</label><br>
+    <input type="radio" id="destroy_no" name="destroy" value="no"><label for="destroy_no">No</label><br>
+    <input type="radio" id="destroy_only" name="destroy" value="only"><label for="destroy_only">Only</label><br><br>
+
+    <label for="extra_vars_file">Extra Vars File Path:</label><br>
+    <input type="text" id="extra_vars_file" name="extra_vars_file"><br><br>
+
+    <label for="scm_branch">Scm Branch:</label><br>
+    <input type="text" id="scm_branch" name="scm_branch"><br><br>
+
+    <label for="baseline_branch">Baseline Config Branch:</label><br>
+    <input type="text" id="baseline_branch" name="baseline_branch"><br><br>
+
+    <label for="skip_types">Flavors to Skip (used only when job type=ALL):</label><br>
+    <select id="skip_types" name="skip_types" multiple size="5">
+        <option value="none">none</option>
+        <option value="Standard">Standard</option>
+        <option value="Serial">Serial</option>
+        <option value="HVD">HVD</option>
+        <option value="SQL">SQL</option>
+    </select><br><br>
+
+    <input type="submit" value="Run Script">
+</form>
+
+{% if result %}
+    <h2>Execution Result</h2>
+    <p>{{ result }}</p>
+{% endif %}
+
+<h2>Test Execution Logs:</h2>
+<pre id="log-content"></pre>
+
+<script>
+    // Create a new EventSource for streaming logs
+    const logStream = new EventSource("/stream_logs");
+
+    // Append each new log entry to the pre element
+    logStream.onmessage = function(event) {
+        const logContent = document.getElementById("log-content");
+        logContent.textContent += event.data + "\n";
+        logContent.scrollTop = logContent.scrollHeight; // Auto scroll to bottom
+    };
+</script>
+
+</body>
+</html>
